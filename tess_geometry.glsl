@@ -1,7 +1,7 @@
 #include "tess_functions"
 
 layout(triangles) in;
-layout(triangle_strip, max_vertices=320) out;
+layout(triangle_strip, max_vertices=448) out;
 
 uniform sampler2D texMap;
 
@@ -36,7 +36,7 @@ bool shouldDivide(int depth, float lumi) {
         return true;
 
     // nomalize depth value
-    float normDepth = map(depth, 0.0, maxDepth, threshold, 1.0);
+    float normDepth = map(depth, 0.0, maxDepth + 1, threshold, 1.0);
 
     if (lumi > normDepth)
         return true;
