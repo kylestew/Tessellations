@@ -6,6 +6,7 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices=MAX_VERTICES) out;
 
 uniform sampler2D texMap;
+uniform sampler2D mapMap;
 
 uniform vec4 instructions;
 uniform bool alwaysDivide;
@@ -41,7 +42,7 @@ bool shouldDivide(int depth, float lumi) {
         return true;
 
     // nomalize depth value
-    float normDepth = map(depth, 0.0, maxDepth, 0.0, threshold * 3);
+    float normDepth = map(depth + 1, 0.0, maxDepth, 0.0, threshold * 3);
 
     /* if ((lumi * lumi * lumi * threshold) > normDepth) */
     if (lumi > normDepth)
@@ -252,6 +253,7 @@ void main() {
         st.y = (tri.aUV.y + tri.bUV.y + tri.cUV.y) / 2.0;
         vec2 texCenter = vec2(st);
         vec4 col = texture(texMap, texCenter);
+        /* vec4 mapSample = texture(mapMap, texCenter); */
         float bri = luma(col);
 
         if (shouldDivide(gen, bri)) {
@@ -333,9 +335,7 @@ void main() {
             }
         }
 
-
         /* col = vec4(bri*bri*threshold, 0, 0, 1); */
-
 
         // draw this vertex
         oVert.color = col;
