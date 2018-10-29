@@ -1,7 +1,9 @@
 #include "tess_functions"
 
+#define MAX_VERTICES 448
+
 layout(triangles) in;
-layout(triangle_strip, max_vertices=448) out;
+layout(triangle_strip, max_vertices=MAX_VERTICES) out;
 
 uniform sampler2D texMap;
 
@@ -25,19 +27,23 @@ struct TriangleDivision {
 };
 
 #define TESS_STACK_SIZE 64
-TriangleDivision stack[64];
+TriangleDivision stack[TESS_STACK_SIZE];
 int stackPointer = 0;
 int maxDepth = 0;
+int vertices = 0;
 
 bool shouldDivide(int depth, float lumi) {
     if (depth > maxDepth)
         return false;
+    if (vertices > MAX_VERTICES * 0.9)
+        return false; // stop subdividing
     if (alwaysDivide)
         return true;
 
     // nomalize depth value
-    float normDepth = map(depth, 0.0, maxDepth + 1, threshold, 1.0);
+    float normDepth = map(depth, 0.0, maxDepth, 0.0, threshold * 3);
 
+    /* if ((lumi * lumi * lumi * threshold) > normDepth) */
     if (lumi > normDepth)
         return true;
     return false;
@@ -327,7 +333,9 @@ void main() {
             }
         }
 
-        /* col = vec4(bri, 0, 0, 1.0); */
+
+        /* col = vec4(bri*bri*threshold, 0, 0, 1); */
+
 
         // draw this vertex
         oVert.color = col;
@@ -342,10 +350,11 @@ void main() {
         gl_Position = TDWorldToProj(tri.c, 0);
         EmitVertex();
 
-        EndPrimitive();
+        vertices += 3;
 
         stack[sp].gen = -1; // mark as processed
         stackPointer--;
 
+        EndPrimitive();
     }
 }
